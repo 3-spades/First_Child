@@ -1,4 +1,5 @@
 import re
+import Long_responses
 
 def xác_suất_xuất_hiện_từ(câu_từ_người_dùng, từ_khả_thi, là_một_từ=False, key_word=[]):
     tần_xuất = 0
@@ -31,7 +32,7 @@ def kiểm_tra_câu(danh_sách_từ_trong_câu_của_người_dùng):
 
     câu_phản_hồi_phù_hợp_nhất = max(danh_sách_xác_suất_xuất_hiện_cao_nhất, key=danh_sách_xác_suất_xuất_hiện_cao_nhất.get)
 
-    return câu_phản_hồi_phù_hợp_nhất
+    return Long_responses.unknown() if danh_sách_xác_suất_xuất_hiện_cao_nhất[câu_phản_hồi_phù_hợp_nhất] < 1 else câu_phản_hồi_phù_hợp_nhất
 
 def phản_hồi(câu_từ_người_dùng):
     danh_sách_từ_trong_câu_của_người_dùng = re.split(r'\s+|[.;?!,-=]\s*', câu_từ_người_dùng.lower())
