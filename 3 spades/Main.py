@@ -1,43 +1,42 @@
-import re
-import Long_responses
+import json
+from difflib import get_close_matches
 
-def xác_suất_xuất_hiện_từ(câu_từ_người_dùng, từ_khả_thi, là_một_từ=False, key_word=[]):
-    tần_xuất = 0
-    chứa_key_word = True
-    for từ in câu_từ_người_dùng:
-        if từ in từ_khả_thi: tần_xuất+=1
-    
-    phần_trăm = float(tần_xuất) / float(len(câu_từ_người_dùng))
+filePath = "Malfy_knowledge.json"
+def Save(data: dict):
+    with open(filePath,'w') as file:
+        json.dump(data,file,indent=2)
 
-    for từ in key_word:
-        if từ not in câu_từ_người_dùng:
-            chứa_key_word = False
-            break
-    
-    if chứa_key_word or là_một_từ:
-        return int(phần_trăm*100)
-    else: return 0
+def Load() -> dict:
+    with open(filePath,'r') as file:
+        data = json.load(file)
+    return data
 
-def kiểm_tra_câu(danh_sách_từ_trong_câu_của_người_dùng):
-    danh_sách_xác_suất_xuất_hiện_cao_nhất = {}
+def find_best_match_question(user_question: str, questions: list) -> str | None:
+    best_match = get_close_matches(user_question,questions,n=1)
+    return best_match[0] if best_match else None
 
-    def phản_hồi(phản_hồi_của_Malfy, danh_sách_các_từ, là_từ_đơn, key_word):
-        nonlocal danh_sách_xác_suất_xuất_hiện_cao_nhất
-        danh_sách_xác_suất_xuất_hiện_cao_nhất[phản_hồi_của_Malfy] = xác_suất_xuất_hiện_từ(danh_sách_từ_trong_câu_của_người_dùng,danh_sách_các_từ,là_từ_đơn,key_word)
+def find_answer(best_match: str, data: dict) -> str:
+    for q in data["questions"]:
+        if best_match==q["question"]:
+            return q["answer"]
 
-    #Các câu phản hồi =======================================================================================
-    phản_hồi("Xin chào!", ["chào","hi","hello","yo"],là_từ_đơn=True,key_word=[])
-    phản_hồi("Mình cảm thấy rất khỏe!",["bạn","khỏe","chứ"],là_từ_đơn=False,key_word=["khỏe"])
-    phản_hồi("Hẹn gặp lại nhé!", ["tạm","biệt","hẹn","gặp","lại"],là_từ_đơn=False,key_word=["tạm","biệt"])
+data = Load()
 
-    câu_phản_hồi_phù_hợp_nhất = max(danh_sách_xác_suất_xuất_hiện_cao_nhất, key=danh_sách_xác_suất_xuất_hiện_cao_nhất.get)
-
-    return Long_responses.unknown() if danh_sách_xác_suất_xuất_hiện_cao_nhất[câu_phản_hồi_phù_hợp_nhất] < 1 else câu_phản_hồi_phù_hợp_nhất
-
-def phản_hồi(câu_từ_người_dùng):
-    danh_sách_từ_trong_câu_của_người_dùng = re.split(r'\s+|[.;?!,-=]\s*', câu_từ_người_dùng.lower())
-    câu_phản_hồi = kiểm_tra_câu(danh_sách_từ_trong_câu_của_người_dùng)
-    return câu_phản_hồi
+print("Note: Malphy giờ đã có não!")
 
 while True:
-    print("Malfy: " + phản_hồi(input("Bạn: ")))
+    message = input("Bạn: ")
+    
+    best_match_question = find_best_match_question(message,[q["question"] for q in data["questions"]])
+    if best_match_question:
+        answer = find_answer(best_match_question,data)
+        print("Malfy:",answer)
+    else:
+        user_answer = input("Malfy: Mình không hiểu bạn đang nói gì cả\nMalfy: Bạn có thể dạy mình câu trả lời được không? Nếu bạn không muốn thì có thể trả lời là 'không' nhé: ")
+        if user_answer.lower() != "không":
+            data["questions"].append({"question": message, "answer":user_answer})
+            Save(data)
+            print("Malfy: Cảm ơn bạn nhé :>")
+        else:
+            print("Tiếc quá nhỉ! Mong là lần tới có thể được bạn chỉ bảo thêm!")
+
