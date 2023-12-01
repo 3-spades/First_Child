@@ -1,11 +1,26 @@
-d = {
-    "leave": {
-        "bye": ["t\u1ea1m bi\u1ec7t", "bye","see ya", "goodbye","see you again"],
-        "answer": ["T\u1ea1m bi\u1ec7t!", "Bye!","Good bye!","See you soon!"]
-    },
-    "non": {
-        "super": []
-    }
-  }
-tmp = d["leave"]
-print(tmp["bye"])
+from customtkinter import *
+
+root = CTk()
+class Static:
+    name = ""
+
+def A(event):
+    Static.name = a.get()
+    a.delete(0,END)
+    
+def C(event, message):
+    print(message, Static.name)
+
+def B():
+    a.bind("<Return>", lambda event: C(event, a.get()))
+
+a = CTkEntry(root)
+a.pack()
+
+a.bind("<Return>", A)
+
+B()
+
+
+
+root.mainloop()
